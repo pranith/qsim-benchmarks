@@ -131,6 +131,26 @@
 #include "/opt/PTLsim/ptlcalls.h"
 #endif
 
+/** \brief Execute QSIM magic calls at beginning and end of
+ * Region-of-Interest.
+ *
+ * If this macro is defined to 1 the QSIM trigger functions are called
+ * at the beginning and end of the Region-of-Interest. The hooks library will
+ * execute qsim_magic_enable() at the beginning of the Region-of-Interest
+ * and qsim_magic_disable() at its end.
+ *
+ * QSIM uses these functions to enable callbacks or native
+ * execution. To use this feature you need to make sure that the correct
+ * header file is included in file config.h
+ *
+ * This functionality is disabled by default.
+ */
+#define ENABLE_QSIM_MAGIC 1
+/* Path to QSIM directory, if you want to use its trigger functions */
+#if ENABLE_QSIM_MAGIC
+#include "qsim_magic.h"
+#endif
+
 
 
 /** \brief Prefix for all output.
