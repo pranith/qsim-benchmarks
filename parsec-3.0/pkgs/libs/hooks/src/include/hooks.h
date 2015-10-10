@@ -160,5 +160,7 @@ void __parsec_roi_end();
 } // extern "C"
 #endif
 
+#include "qsim_magic.h"
+
 #endif //_PARSEC_HOOKS_HOOKS_H
 

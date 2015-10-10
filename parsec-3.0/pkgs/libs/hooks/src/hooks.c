@@ -195,6 +195,10 @@ void __parsec_roi_begin() {
   #if ENABLE_PTLSIM_TRIGGER
   ptlcall_switch_to_sim();
   #endif //ENABLE_PTLSIM_TRIGGER
+  
+  #if ENABLE_QSIM_MAGIC
+  qsim_magic_enable();
+  #endif //ENABLE_QSIM_MAGIC
 }
 
 
@@ -214,6 +218,10 @@ void __parsec_roi_end() {
   #if ENABLE_PTLSIM_TRIGGER
   ptlcall_switch_to_native();
   #endif //ENABLE_PTLSIM_TRIGGER
+
+  #if ENABLE_QSIM_MAGIC
+  qsim_magic_disable();
+  #endif //ENABLE_QSIM_MAGIC
 
   #if ENABLE_TIMING
   struct timeval t;
