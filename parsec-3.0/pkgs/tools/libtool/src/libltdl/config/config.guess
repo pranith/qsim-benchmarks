@@ -845,6 +845,9 @@ EOF
 	    echo ${UNAME_MACHINE}-unknown-linux-gnueabi
 	fi
 	exit ;;
+    aarch64*:Linux:*:*)
+	echo ${UNAME_MACHINE}-unknown-linux-gnu
+	exit ;;
     avr32*:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux-gnu
 	exit ;;
