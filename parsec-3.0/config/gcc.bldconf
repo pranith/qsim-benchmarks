@@ -71,13 +71,13 @@ export MAKE="${GNUTOOL_HOME}/bin/${BINARY_PREFIX}make"
 PORTABILITY_FLAGS="-static-libgcc -Wl,--hash-style=both,--as-needed"
 
 # Arguments to use
-export CFLAGS="-I${PARSECDIR}/pkgs/libs/hooks/src/include -DENABLE_PARSEC_HOOKS -DQSIM -m32 -static -O3 -g -funroll-loops -fprefetch-loop-arrays ${PORTABILITY_FLAGS} -L${PARSECDIR}/pkgs/libs/hooks/src -lhooks"
-export CXXFLAGS="-I${PARSECDIR}/pkgs/libs/hooks/src/include -DENABLE_PARSEC_HOOKS -DQSIM -m32 -static -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions ${PORTABILITY_FLAGS} -L${PARSECDIR}/pkgs/libs/hooks/src -lhooks"
-export CPPFLAGS="-m32 -static"
-export CXXCPPFLAGS="-m32 -static"
-export LDFLAGS="-L${CC_HOME}/lib64 -L${CC_HOME}/lib -L${PARSECDIR}/pkgs/libs/hooks/src -lhooks -m32 -static"
-export LIBS=" -L${PARSECDIR}/pkgs/libs/hooks/src -lhooks -m32 -static"
-export EXTRA_LIBS="-m32 -static"
+export CFLAGS="-I${PARSECDIR}/pkgs/libs/hooks/src/include -DQSIM -static -O3 -g -funroll-loops -fprefetch-loop-arrays ${PORTABILITY_FLAGS} -L${PARSECDIR}/pkgs/libs/hooks/src"
+export CXXFLAGS="-I${PARSECDIR}/pkgs/libs/hooks/src/include -DQSIM -static -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions ${PORTABILITY_FLAGS} -L${PARSECDIR}/pkgs/libs/hooks/src"
+export CPPFLAGS="-static"
+export CXXCPPFLAGS="-static"
+export LDFLAGS="-L${CC_HOME}/lib64 -L${CC_HOME}/lib -L${PARSECDIR}/pkgs/libs/hooks/src -static"
+export LIBS=" -L${PARSECDIR}/pkgs/libs/hooks/src -static"
+export EXTRA_LIBS="-static"
 export PARMACS_MACRO_FILE="pthreads"
 
 
