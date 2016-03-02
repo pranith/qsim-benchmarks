@@ -59,36 +59,6 @@
 
 #define INITIAL_SEARCH_TREE_SIZE 4096
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
-
 //The configuration block defined in main
 config_t * conf;
 
@@ -1499,10 +1469,6 @@ void Encode(config_t * _conf) {
   data_process_args.nqueues = nqueues;
   data_process_args.fd = fd;
 
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
     __parsec_roi_begin();
 #endif
@@ -1556,10 +1522,6 @@ void Encode(config_t * _conf) {
   __parsec_roi_end();
 #endif
 
-#ifdef QSIM
-    APP_END();
-#endif
-
   /* free queues */
   for(i=0; i<nqueues; i++) {
     queue_destroy(&deduplicate_que[i]);
@@ -1594,10 +1556,6 @@ void Encode(config_t * _conf) {
   generic_args.nqueues = -1;
   generic_args.fd = fd;
 
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
   __parsec_roi_begin();
 #endif
@@ -1607,10 +1565,6 @@ void Encode(config_t * _conf) {
 
 #ifdef ENABLE_PARSEC_HOOKS
   __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
 #endif
 
 #endif //ENABLE_PTHREADS
