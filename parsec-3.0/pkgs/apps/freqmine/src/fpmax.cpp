@@ -66,35 +66,6 @@ static int omp_get_max_threads() {return 1;}
 
 #define LINT sizeof(int)
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
 int** ITlen;
 int** bran;
 int** prefix;
@@ -176,10 +147,6 @@ int main(int argc, char **argv)
 	fptree = (FP_tree*)fp_buf[0]->newbuf(1, sizeof(FP_tree));
 	fptree->init(-1, 0, 0);
 
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
@@ -220,10 +187,6 @@ int main(int argc, char **argv)
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
 #endif
 
 	printLen();
