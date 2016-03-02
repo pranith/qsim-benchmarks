@@ -47,35 +47,6 @@
 #include <hooks.h>
 #endif
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
 uint8_t *mux_buffer = NULL;
 int mux_buffer_size = 0;
 
@@ -878,10 +849,6 @@ static int  Encode( x264_param_t *param, cli_opt_t *opt )
 
     i_start = x264_mdate();
 
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
     __parsec_roi_begin();
 #endif
@@ -937,10 +904,6 @@ static int  Encode( x264_param_t *param, cli_opt_t *opt )
 
 #ifdef ENABLE_PARSEC_HOOKS
     __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
 #endif
 
     i_end = x264_mdate();
