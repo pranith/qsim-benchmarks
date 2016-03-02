@@ -185,10 +185,6 @@ int mainOMP(string path, int cameras, int frames, int particles, int layers, int
 
 	vector<float> estimate;																//expected pose from particle distribution
 
-#ifdef QSIM
-    printf("Qsim: Start of ROI\n"); 
-#endif
-
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_begin();
 #endif
@@ -205,10 +201,6 @@ int mainOMP(string path, int cameras, int frames, int particles, int layers, int
 	}
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    printf("Qsim: End of ROI\n"); 
 #endif
 
 	return 1;
@@ -254,10 +246,6 @@ int mainPthreads(string path, int cameras, int frames, int particles, int layers
 
 	vector<float> estimate;																//expected pose from particle distribution
 
-#ifdef QSIM
-    printf("Qsim: Start of ROI\n"); 
-#endif
-
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_begin();
 #endif
@@ -277,10 +265,6 @@ int mainPthreads(string path, int cameras, int frames, int particles, int layers
 	workers.JoinAll();
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    printf("Qsim: Start of ROI\n"); 
 #endif
 
 	return 1;
@@ -359,9 +343,6 @@ int mainSingleThread(string path, int cameras, int frames, int particles, int la
 
 	vector<float> estimate;																//expected pose from particle distribution
 
-#ifdef QSIM
-    printf("Qsim: Start of ROI\n"); 
-#endif
 
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_begin();
@@ -379,10 +360,6 @@ int mainSingleThread(string path, int cameras, int frames, int particles, int la
 	}
 #if defined(ENABLE_PARSEC_HOOKS)
         __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    printf("Qsim: End of ROI\n"); 
 #endif
 
 	return 1;
