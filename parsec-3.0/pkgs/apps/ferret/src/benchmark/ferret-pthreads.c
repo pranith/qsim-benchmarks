@@ -41,35 +41,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define MAXR	100
 #define IMAGE_DIM	14
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
 const char *db_dir = NULL;
 const char *table_name = NULL;
 const char *query_dir = NULL;
@@ -573,36 +544,6 @@ int main (int argc, char *argv[])
 	for (i = 1; i < NTHREAD_OUT; i++) t_out_desc[i] = t_out_desc[0];
 
 	cnt_enqueue = cnt_dequeue = 0;
-
-#ifdef QSIM
-    APP_START();
-#endif
-
-#ifdef ENABLE_PARSEC_HOOKS
-	__parsec_roi_begin();
-#endif
-
-	p_load = tpool_create(t_load_desc, NTHREAD_LOAD);
-	p_seg = tpool_create(t_seg_desc, NTHREAD_SEG);
-	p_extract = tpool_create(t_extract_desc, NTHREAD_EXTRACT);
-	p_vec = tpool_create(t_vec_desc, NTHREAD_VEC);
-	p_rank = tpool_create(t_rank_desc, NTHREAD_RANK);
-	p_out = tpool_create(t_out_desc, NTHREAD_OUT);
-
-	tpool_join(p_out, NULL);
-	tpool_join(p_rank, NULL);
-	tpool_join(p_vec, NULL);
-	tpool_join(p_extract, NULL);
-	tpool_join(p_seg, NULL);
-	tpool_join(p_load, NULL);
-
-#ifdef ENABLE_PARSEC_HOOKS
-	__parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
-#endif
 
 	tpool_destroy(p_load);
 	tpool_destroy(p_seg);
