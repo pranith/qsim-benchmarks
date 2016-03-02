@@ -15,35 +15,6 @@
 #include <hooks.h>
 #endif
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
 using namespace RTTL;
 using namespace LRT;
 
@@ -502,10 +473,6 @@ int main(int argc, char* argv[])
     glutKeyboardFunc(keyboardfunc);
 
     /* start rendering */
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
     atexit(__parsec_roi_end);
     __parsec_roi_begin();
@@ -516,14 +483,8 @@ int main(int argc, char* argv[])
     __parsec_roi_end();
 #endif
 
-#ifdef QSIM
-    APP_END();
-#endif
   } else {
     cout << "Rendering " << framesToRender << " frames... " << endl << flush;
-#ifdef QSIM
-    APP_START();
-#endif
 
 #ifdef ENABLE_PARSEC_HOOKS
     __parsec_roi_begin();
@@ -535,10 +496,6 @@ int main(int argc, char* argv[])
     } while(!(__builtin_expect(framesToRender > 0,0) && frame >= framesToRender));
 #ifdef ENABLE_PARSEC_HOOKS
     __parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
 #endif
 
     cout << "Done" << endl << flush;
