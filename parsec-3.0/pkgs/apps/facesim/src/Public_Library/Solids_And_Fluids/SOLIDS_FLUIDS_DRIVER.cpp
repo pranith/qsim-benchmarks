@@ -10,35 +10,6 @@
 #include <hooks.h>
 #endif
 
-/***** QSIM CHECKPOINT *****/
-#ifdef QSIM
-#define APP_START() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xaaaaaaaa));\
-    } while(0)
-
-#define APP_END() do { \
-  __asm__ __volatile__("cpuid;"::"a"(0xfa11dead));\
-    } while(0)
-#else
-    unsigned long long start_time;
-    unsigned long long end_time;
-
-#include <sys/time.h>
-
-static inline unsigned long long usec_time(void) {
-      unsigned long long usec;
-        struct timeval tv;
-          gettimeofday(&tv, NULL);
-            usec = 1000000 * tv.tv_sec + tv.tv_usec;
-}
-
-#define APP_START() do { start_time = usec_time(); } while(0)
-#define APP_END() do { \
-  end_time = usec_time(); \
-    printf("%lluus\n", end_time - start_time); \
-      } while(0)
-#endif
-
 using namespace PhysBAM;
 //#####################################################################
 // Function Execute_Main_Program
@@ -50,20 +21,12 @@ Execute_Main_Program()
 
 	if (!example.restart && example.write_output_files && !example.write_substeps) Write_Output_Files (example.first_frame);
 
-#ifdef QSIM
-    APP_START();
-#endif
-
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
 #endif
 	Simulate_To_Frame (example.last_frame);
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
-#endif
-
-#ifdef QSIM
-    APP_END();
 #endif
 
 	//Always write last frame for verification purposes
