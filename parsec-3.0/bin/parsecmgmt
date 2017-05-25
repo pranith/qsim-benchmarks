@@ -311,6 +311,7 @@ Actions:
     'status'         Shows a summary of the current status of the PARSEC
                      installation.
     'info'           List available packages and configurations.
+    'mktar'          Make tarball for qsim 
 
 
 Examples (1) [Compatible to PARSEC 2.1 but Extended]:
@@ -366,7 +367,7 @@ Examples (3) [NEW: SPLASH-2 Suite and SPLASH-2x Suite]:
         $me -a fullclean -p splash2"
 
   # Define valid actions
-  valid_actions="build run clean uninstall fullclean fulluninstall status info"
+  valid_actions="build run clean uninstall fullclean fulluninstall status info mktar"
 
   # Parse arguments
   parsemode="none"
@@ -1212,6 +1213,133 @@ function get_topdir {
   fi
 }
 
+# Make tarball for qsim
+function build_tarball {
+  if [ -z "$1" ]; then
+    echo "${oprefix} Error: build_tarball called with no arguments." 2>&1 | ${TEE} ${log}
+    exit 1
+  fi
+  local pkg=$1
+
+  #FIXME current input size is fixed to test
+  local inputsize="test"
+
+  echo "${oprefix} [---------- Analyzing package ${pkg} ----------]" 2>&1 | ${TEE} ${log}
+
+  # Load package configuration
+  source ${PARSECDIR}/config/packages/${pkg}.pkgconf
+
+  # Define package-specific directories
+  if [ -z "$pkg_group" ]; then
+    echo "${oprefix} Error: Group of package ${pkg} is unknown." 2>&1 | ${TEE} ${log}
+    exit 1
+  fi
+
+  # determine top directory
+  local bench
+  bench=`expr match ${pkg} '\(.*\.\)'`
+  eval pkgname="${pkg#${bench}}"
+  bench=${bench%\.}
+
+  if [ ${bench} == "parsec" ]; then
+    benchdir="pkgs"
+    #echo "${oprefix} error: only supports splash2 benchmark at the moment." | ${tee} ${log}
+    #exit 1
+  else
+    eval benchdir="ext\/${bench}"
+  fi
+  
+  local pkgdir=${PARSECDIR}/${benchdir}/${pkg_group}/${pkgname}
+  local pkgtardir=${PARSECDIR}/${benchdir}/${pkg_group}/${pkgname}/tarball
+  local pkgsrcdir=${pkgdir}/src
+  local pkgobjdir=${pkgdir}/obj/${PARSECPLAT}
+  local pkginstdir=${pkgdir}/inst/${PARSECPLAT}
+  local pkginputdir=${pkgdir}/inputs
+  local pkgparsecdir=${pkgdir}/parsec
+
+  if [ ! -d "${pkginstdir}" ]; then
+    echo "${oprefix} Error: app $pkgname is not built, please build the application first" 2>&1
+    exit 1
+  fi
+
+  # netapps leverages existing benchmark's inputs
+  if [ ${pkg_group} == "netapps" ]; then
+	if [ ${pkgname} == "netdedup" ] || [ ${pkgname} == "netstreamcluster" ]; then
+		pkginputdir=${pkginputdir/netapps\/net/kernels\/}
+	elif [ ${pkgname} == "netferret" ]; then
+		pkginputdir=${pkginputdir/netapps\/net/apps\/}
+	fi
+  fi
+ 
+  # Check whether selected input size is available
+  if [ ! -f "${PARSECDIR}/config/${inputsize}.runconf" ]; then
+    echo "${oprefix} Error: Selected input size not available."  2>&1 | ${TEE} ${log}
+    exit 1
+  fi
+
+  # Source package run configuration
+  if [ ! -f "${pkgparsecdir}/${inputsize}.runconf" ]; then
+    echo "${oprefix} Error: Cannot find run configuration '${inputsize}.runconf' for package ${benchmark}." 2>&1 | ${TEE} ${log}
+    exit 1
+      get_topdir "${package}"
+  else
+    source ${pkgparsecdir}/${inputsize}.runconf
+  fi
+
+  # Set up tarball directory
+  if [ -d "${pkgtardir}" ]; then
+    echo "${oprefix} Deleting old tarball directory." | ${TEE} ${log}
+    ${RM} ${pkgtardir} | ${TEE} ${log}
+  fi
+
+  echo "${oprefix} Setting up tarball directory." | ${TEE} ${log}
+  ${MKDIR} ${pkgtardir} | ${TEE} ${log}
+  pushd "${pkgtardir}" > /dev/null
+
+  # copy executable binary and script
+  cp -arf $pkginstdir/bin .
+
+  # Determine input archive
+  local pkginput="${pkginputdir}/input_${inputsize}.tar"
+  if [ ! -f "${pkginput}" ]; then
+    echo "${oprefix} No archive for input '${inputsize}' available, skipping input setup." | ${TEE} ${log}
+  else
+    echo "${oprefix} Unpacking benchmark input '${inputsize}'." | ${TEE} ${log}
+    ${UNTAR} ${pkginput} > /dev/null | ${TEE} ${log}
+  fi
+
+  # Generate the runme.sh
+  if [ -f runme.sh ]; then
+    echo "${oprefix} Deleting old runme.sh." | ${TEE} ${log}
+    ${RM} runme.sh | ${TEE} ${log}
+  fi
+
+  echo "${oprefix} Generating new runme.sh" | ${TEE} ${log}
+  echo "#!/sbin/ash" >runme.sh
+  echo -n >>runme.sh
+  echo 'export NTHREADS=$NCPUS' >>runme.sh
+  local _run_args=`grep -i "run_args=" ${pkgparsecdir}/${inputsize}.runconf | awk -F "\"" '{print $2}'`
+  echo "${run_exec} ${_run_args} ${netmode} ${clientthreads}" >>runme.sh
+  
+  # patching run.sh for splash2x
+  if [ ${run_exec} == "bin/run.sh" ]; then
+    pushd bin > /dev/null
+    echo "${oprefix} patching the run.sh" | ${TEE} ${log}
+    cat run.sh | sed 's/PROG=.*/PROG=\"bin\/${TARGET}\"/g' >run_tmp.sh
+    mv -f run_tmp.sh run.sh
+    chmod +x run.sh
+    popd > /dev/null
+  fi
+  chmod +x runme.sh
+
+  echo "${oprefix} Generating $pkgname.tar..." 2>&1
+  # tar -cf ${PARSECDIR}/tars/$pkgname.tar * --exclude='run.sh'
+  tar -cf ${PARSECDIR}/tars/$pkgname.tar *
+  echo "${oprefix} Done!" 2>&1
+  popd > /dev/null
+}
+
+
 #################################################################
 #                                                               #
 #                             MAIN                              #
@@ -1259,7 +1387,7 @@ case ${action} in
         is_duplicate=""
         for bib in ${list_of_bibentries}; do
           if [[ "${bibkey}" == "${bib}" ]]; then
-            is_duplicate="TRUE"
+            is_duplicate="true"
             break
           fi
           ((i++))
@@ -1705,6 +1833,25 @@ case ${action} in
       fi
       ((i++))
     done
+    exit 0;;
+  "mktar"         )
+    # Create tarball top directory
+    if [ ! -d "${PARSECDIR}/tars" ]; then
+      echo "${oprefix} create directory ${PARSECDIR}/tars"
+      mkdir -p ${PARSECDIR}/tars
+    fi
+    echo "${oprefix} tarball are installed in directory ${PARSECDIR}/tars"
+
+    # Build all packages
+    for pkg in ${pkgs}; do
+
+      echo "${oprefix} mktar ${pkg}" 
+      # Load package configuration
+      source ${PARSECDIR}/config/packages/${pkg}.pkgconf
+
+      build_tarball ${pkg}
+    done
+
     exit 0;;
   *           )
     echo "${oprefix} Error: Unknown action '${action}'."
