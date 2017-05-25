@@ -51,15 +51,15 @@ case "${OSTYPE}" in
 esac
 
 # Compilers and preprocessors
-export CC="${CC_HOME}/bin/gcc"
-export CXX="${CC_HOME}/bin/g++"
-export CPP="${CC_HOME}/bin/cpp"
+export CC="${CC_HOME}/bin/${ARCH_PREFIX}gcc"
+export CXX="${CC_HOME}/bin/${ARCH_PREFIX}g++"
+export CPP="${CC_HOME}/bin/${ARCH_PREFIX}cpp"
 export CXXCPP=""
 
 # GNU Binutils
-export LD="${BINUTIL_HOME}/bin/${BINARY_PREFIX}ld"
-export AS="${BINUTIL_HOME}/bin/${BINARY_PREFIX}as"
-export AR="${BINUTIL_HOME}/bin/${BINARY_PREFIX}ar"
+export LD="${BINUTIL_HOME}/bin/${ARCH_PREFIX}ld"
+export AS="${BINUTIL_HOME}/bin/${ARCH_PREFIX}as"
+export AR="${BINUTIL_HOME}/bin/${ARCH_PREFIX}ar"
 export RANLIB="${BINUTIL_HOME}/bin/${BINARY_PREFIX}ranlib"
 export STRIP="${BINUTIL_HOME}/bin/${BINARY_PREFIX}strip"
 
