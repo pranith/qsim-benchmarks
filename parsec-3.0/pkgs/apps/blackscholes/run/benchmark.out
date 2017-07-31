@@ -1,7 +1,0 @@
-PARSEC Benchmark Suite Version 3.0-beta-20120904
-[HOOKS] PARSEC Hooks Version 1.2
-./parsecmgmt: line 1156: 22445 Segmentation fault      (core dumped) /home/wjhsong/Downloads/parsec-3.0/bin/../pkgs/apps/blackscholes/inst/i386-linux.gcc-pthreads/bin/blackscholes 1 in_4K.txt prices.txt
-
-real	0m0.076s
-user	0m0.000s
-sys	0m0.000s
