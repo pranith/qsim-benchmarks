@@ -1222,7 +1222,7 @@ function build_tarball {
   local pkg=$1
 
   #FIXME current input size is fixed to test
-  local inputsize="test"
+  local inputsize="simmedium"
 
   echo "${oprefix} [---------- Analyzing package ${pkg} ----------]" 2>&1 | ${TEE} ${log}
 
